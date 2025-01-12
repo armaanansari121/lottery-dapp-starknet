@@ -1,33 +1,52 @@
-import React from "react";
-
+"use client";
+import { ArgentMobileConnector } from "starknetkit/argentMobile";
+import { WebWalletConnector } from "starknetkit/webwallet";
 import { sepolia, mainnet } from "@starknet-react/chains";
 import {
-  StarknetConfig,
-  publicProvider,
   argent,
   braavos,
+  Connector,
+  publicProvider,
+  StarknetConfig,
   useInjectedConnectors,
   voyager,
 } from "@starknet-react/core";
+import { ReactNode } from "react";
 
-export function StarknetProvider({ children }: { children: React.ReactNode }) {
-  const { connectors } = useInjectedConnectors({
-    // Show these connectors if the user has no connector installed.
+const StarknetProvider = ({ children }: { children: ReactNode }) => {
+  const chains = [mainnet, sepolia];
+  const { connectors: injected } = useInjectedConnectors({
     recommended: [argent(), braavos()],
-    // Hide recommended connectors if the user has any connector installed.
     includeRecommended: "always",
-    // Randomize the order of the connectors.
-    order: "random",
   });
+
+  const ArgentMobile = ArgentMobileConnector.init({
+    options: {
+      dappName: "Lottery Starknet",
+      url: "http://172.20.10.4:3000",
+    },
+    inAppBrowserOptions: {},
+  });
+
+  const connectors = [
+    ...injected,
+    new WebWalletConnector({
+      url: "https://web.argent.xyz",
+    }) as never as Connector,
+    ArgentMobile as never as Connector,
+  ];
 
   return (
     <StarknetConfig
-      chains={[mainnet, sepolia]}
+      chains={chains}
       provider={publicProvider()}
       connectors={connectors}
       explorer={voyager}
+      autoConnect
     >
       {children}
     </StarknetConfig>
   );
-}
+};
+
+export default StarknetProvider;

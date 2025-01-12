@@ -19,7 +19,10 @@ interface WalletDetails {
 
 const walletIcons = {
   argentX: "/argent.svg",
-  webwallet: "/argent.svg",
+  argentMobile:
+    "data:image/svg+xml;base64,PHN2ZwogICAgd2lkdGg9IjMyIgogICAgaGVpZ2h0PSIzMiIKICAgIHZpZXdCb3g9IjAgMCAzMiAzMiIKICAgIGZpbGw9Im5vbmUiCiAgICB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgPgogICAgPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iI0ZGODc1QiIgLz4KICAgIDxwYXRoCiAgICAgIGQ9Ik0xOC4zMTYgOEgxMy42ODRDMTMuNTI5MiA4IDEzLjQwNTIgOC4xMjcyIDEzLjQwMTggOC4yODUzMUMxMy4zMDgyIDEyLjcyOTYgMTEuMDMyMyAxNi45NDc3IDcuMTE1MTMgMTkuOTM1NUM2Ljk5MDc3IDIwLjAzMDMgNi45NjI0MyAyMC4yMDg1IDcuMDUzMzUgMjAuMzM2OUw5Ljc2MzQ5IDI0LjE2NTRDOS44NTU2OSAyNC4yOTU3IDEwLjAzNTMgMjQuMzI1MSAxMC4xNjE4IDI0LjIyOTRDMTIuNjExMSAyMi4zNzM0IDE0LjU4MTIgMjAuMTM0NSAxNiAxNy42NTI5QzE3LjQxODcgMjAuMTM0NSAxOS4zODkgMjIuMzczNCAyMS44MzgzIDI0LjIyOTRDMjEuOTY0NiAyNC4zMjUxIDIyLjE0NDMgMjQuMjk1NyAyMi4yMzY2IDI0LjE2NTRMMjQuOTQ2NyAyMC4zMzY5QzI1LjAzNzUgMjAuMjA4NSAyNS4wMDkyIDIwLjAzMDMgMjQuODg1IDE5LjkzNTVDMjAuOTY3NiAxNi45NDc3IDE4LjY5MTggMTIuNzI5NiAxOC41OTgzIDguMjg1MzFDMTguNTk0OSA4LjEyNzIgMTguNDcwOCA4IDE4LjMxNiA4WiIKICAgICAgZmlsbD0id2hpdGUiCiAgICAvPgogIDwvc3ZnPg==",
+  webwallet:
+    "data:image/svg+xml;base64,PHN2ZwogICAgd2lkdGg9IjMyIgogICAgaGVpZ2h0PSIyOCIKICAgIHZpZXdCb3g9IjAgMCAxOCAxNCIKICAgIGZpbGw9Im5vbmUiCiAgICB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgPgogICAgPHBhdGgKICAgICAgZmlsbC1ydWxlPSJldmVub2RkIgogICAgICBjbGlwLXJ1bGU9ImV2ZW5vZGQiCiAgICAgIGQ9Ik0xLjUgMC40Mzc1QzAuOTgyMjMzIDAuNDM3NSAwLjU2MjUgMC44NTcyMzMgMC41NjI1IDEuMzc1VjEyQzAuNTYyNSAxMi40MTQ0IDAuNzI3MTIgMTIuODExOCAxLjAyMDE1IDEzLjEwNDlDMS4zMTMxNyAxMy4zOTc5IDEuNzEwNiAxMy41NjI1IDIuMTI1IDEzLjU2MjVIMTUuODc1QzE2LjI4OTQgMTMuNTYyNSAxNi42ODY4IDEzLjM5NzkgMTYuOTc5OSAxMy4xMDQ5QzE3LjI3MjkgMTIuODExOCAxNy40Mzc1IDEyLjQxNDQgMTcuNDM3NSAxMlYxLjM3NUMxNy40Mzc1IDAuODU3MjMzIDE3LjAxNzggMC40Mzc1IDE2LjUgMC40Mzc1SDEuNVpNMi40Mzc1IDMuNTA2MTZWMTEuNjg3NUgxNS41NjI1VjMuNTA2MTZMOS42MzM0OSA4Ljk0MTA4QzkuMjc1MDcgOS4yNjk2NCA4LjcyNDkzIDkuMjY5NjQgOC4zNjY1MSA4Ljk0MTA4TDIuNDM3NSAzLjUwNjE2Wk0xNC4wODk5IDIuMzEyNUgzLjkxMDEzTDkgNi45NzgyMkwxNC4wODk5IDIuMzEyNVoiCiAgICAgIGZpbGw9ImN1cnJlbnRDb2xvciIKICAgIC8+CiAgPC9zdmc+",
   braavos: "/braavos.svg",
 } as const;
 
@@ -50,6 +53,18 @@ export function WalletModal({ isOpen, setIsOpen }: WalletModalProps) {
           name: "Braavos",
           subtext: "WEBSITE",
           icon: walletIcons.braavos,
+        };
+      case "argentMobile":
+        return {
+          name: "Argent",
+          subtext: "MOBILE",
+          icon: walletIcons.argentMobile,
+        };
+      case "argentWebWallet":
+        return {
+          name: "Argent Web Wallet",
+          subtext: "WEBSITE",
+          icon: walletIcons.webwallet,
         };
       default:
         return {
@@ -99,27 +114,27 @@ export function WalletModal({ isOpen, setIsOpen }: WalletModalProps) {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full text-center max-w-md md:max-w-[800px] transform rounded-3xl bg-white border border-[#E6E6FA] p-4 md:p-8 shadow-xl transition-all">
-                <div className="flex relative justify-center mt-5 text-center items-center mb-5">
+              <Dialog.Panel className="w-full max-w-sm transform rounded-3xl bg-white border border-[#E6E6FA] p-4 shadow-xl transition-all">
+                <div className="flex relative justify-center mt-2 text-center items-center mb-4">
                   <Dialog.Title
                     as="h3"
-                    className="text-2xl font-medium text-[#483D8B]"
+                    className="text-xl font-medium text-[#483D8B]"
                   >
                     Connect wallet
                   </Dialog.Title>
                   <button
                     onClick={handleClose}
-                    className="text-[#9370DB] hover:text-[#483D8B] absolute right-5 transition-colors"
+                    className="text-[#9370DB] hover:text-[#483D8B] absolute right-2 transition-colors"
                   >
-                    <X className="w-6 h-6" />
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
 
-                <p className="text-[#483D8B] my-8">
+                <p className="text-[#483D8B] text-sm my-4 text-center">
                   Choose a wallet you want to connect
                 </p>
 
-                <div className="space-y-8 flex justify-center items-center flex-col mb-8">
+                <div className="space-y-4 flex justify-center items-center flex-col mb-4">
                   {connectors.map((connector) => {
                     const walletDetails = getWalletDetails(connector);
                     const isSelected = selectedConnector?.id === connector.id;
@@ -128,24 +143,24 @@ export function WalletModal({ isOpen, setIsOpen }: WalletModalProps) {
                       <button
                         key={connector.id}
                         onClick={() => connectWallet(connector)}
-                        className={`w-full sm:w-[416px] flex items-center justify-between p-4 rounded-full
+                        className={`w-full flex items-center justify-between p-3 rounded-full
                           border ${
                             isSelected ? "border-[#9370DB]" : "border-[#E6E6FA]"
                           } 
                           hover:border-[#9370DB] transition-colors`}
                       >
                         <div className="flex justify-center mx-auto items-center gap-2">
-                          <div className="relative w-8 h-8">
+                          <div className="relative w-6 h-6">
                             <Image
                               src={walletDetails.icon}
                               alt={walletDetails.name}
-                              width={32}
-                              height={32}
+                              width={24}
+                              height={24}
                               className="rounded-full"
                             />
                           </div>
                           <div className="flex flex-col items-start">
-                            <span className="text-[#483D8B] font-medium">
+                            <span className="text-[#483D8B] text-sm font-medium">
                               {walletDetails.name}
                             </span>
                             <span className="text-xs text-[#9370DB]">
@@ -159,13 +174,13 @@ export function WalletModal({ isOpen, setIsOpen }: WalletModalProps) {
                 </div>
 
                 <button
-                  className={`w-full sm:w-[416px] mb-8 mt-10 py-4 rounded-full 
+                  className={`w-full mb-2 mt-6 py-3 rounded-full 
                     ${
                       selectedConnector
                         ? "bg-[#9370DB] hover:bg-[#483D8B]"
                         : "bg-[#E6E6FA] hover:bg-[#9370DB]"
                     } 
-                    text-white transition-colors`}
+                    text-white text-sm transition-colors`}
                   onClick={() => connectWallet(selectedConnector)}
                   disabled={!selectedConnector}
                 >

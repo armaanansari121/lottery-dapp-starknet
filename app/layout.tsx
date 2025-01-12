@@ -1,6 +1,6 @@
 "use client";
 import "./globals.css";
-import { StarknetProvider } from "./components/StarknetProvider";
+import StarknetProvider from "./components/StarknetProvider";
 import { Navbar } from "./components/Navbar";
 import { useEffect } from "react";
 

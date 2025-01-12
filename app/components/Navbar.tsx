@@ -172,6 +172,7 @@ export function Navbar() {
               <Link
                 href="/"
                 className="flex items-center text-lg font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                onClick={toggleMenu}
               >
                 <svg
                   className="w-6 h-6 mr-3"
@@ -191,6 +192,7 @@ export function Navbar() {
               <Link
                 href="/lotteries"
                 className="flex items-center text-lg font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                onClick={toggleMenu}
               >
                 <svg
                   className="w-6 h-6 mr-3"
