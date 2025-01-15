@@ -15,53 +15,20 @@ import { LotteryABI } from "../abi";
 import {
   FetchedLottery,
   LotteryDetails,
+  LotterySection,
   LotteryState,
+  MyLotteryType,
   TokenDetails,
 } from "../types";
-
-function getRandomNumber() {
-  return Math.floor(Math.random() * 1000000);
-}
-
-function convertToStarknetAddress(address: bigint) {
-  return "0x" + address.toString(16).padStart(64, "0");
-}
-
-function shortenAddress(address: string) {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-}
-
-function decimalToText(decimal: bigint): string {
-  const hex = decimal.toString(16);
-  let str = "";
-  for (let i = 0; i < hex.length; i += 2) {
-    str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-  }
-  return str;
-}
-
-// Utility function to format token amount
-function formatTokenAmount(
-  amount: bigint,
-  decimals: number,
-  symbol: string
-): string {
-  const divisor = BigInt(10) ** BigInt(decimals);
-  const integerPart = amount / divisor;
-  const fractionalPart = amount % divisor;
-
-  // Convert fractional part to string and pad with leading zeros
-  let fractionalStr = fractionalPart.toString().padStart(decimals, "0");
-  // Remove trailing zeros
-  fractionalStr = fractionalStr.replace(/0+$/, "");
-
-  // If no fractional part, return just the integer
-  if (!fractionalStr) {
-    return `${integerPart} ${symbol}`;
-  }
-
-  return `${integerPart}.${fractionalStr} ${symbol}`;
-}
+import {
+  getRandomNumber,
+  convertToStarknetAddress,
+  shortenAddress,
+  decimalToText,
+  formatTokenAmount,
+  convertAddressToStarknetAddress,
+} from "../utils";
+import { LotteryCard } from "../components/LotteryCard";
 
 // Cache to store token details
 const tokenDetailsCache: Map<string, TokenDetails> = new Map();
@@ -71,6 +38,11 @@ export default function Home() {
   const router = useRouter();
   const [lotteries, setLotteries] = useState<LotteryDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState<LotterySection>("active");
+  const [myLotteryType, setMyLotteryType] = useState<MyLotteryType>("enrolled");
+  const [filteredLotteries, setFilteredLotteries] = useState<LotteryDetails[]>(
+    []
+  );
   const [formData, setFormData] = useState({
     token: ETH_TOKEN_ADDRESS,
     participant_fees: "",
@@ -79,6 +51,46 @@ export default function Home() {
   const [selectedTokenType, setSelectedTokenType] = useState<
     "known" | "custom"
   >("known");
+
+  const getFilteredLotteries = useCallback(() => {
+    if (activeSection === "active") {
+      setFilteredLotteries(
+        lotteries.filter((lottery) => lottery.state === LotteryState.ACTIVE)
+      );
+    } else if (activeSection === "past") {
+      setFilteredLotteries(
+        lotteries.filter(
+          (lottery) =>
+            lottery.state === LotteryState.CLOSED ||
+            lottery.state === LotteryState.WINNER_SELECTED
+        )
+      );
+    } else if (activeSection === "my") {
+      if (myLotteryType === "created") {
+        setFilteredLotteries(
+          lotteries.filter(
+            (lottery) =>
+              lottery.owner ===
+              convertAddressToStarknetAddress(account?.address || "")
+          )
+        );
+      } else {
+        setFilteredLotteries(
+          lotteries.filter((lottery) =>
+            lottery.participants.includes(
+              convertAddressToStarknetAddress(account?.address || "")
+            )
+          )
+        );
+      }
+    }
+    return [];
+  }, [account, activeSection, lotteries, myLotteryType]);
+
+  // Filter functions for different lottery sections
+  useEffect(() => {
+    getFilteredLotteries();
+  }, [account, getFilteredLotteries, activeSection]);
 
   async function createLottery(e: React.FormEvent) {
     e.preventDefault();
@@ -262,83 +274,145 @@ export default function Home() {
   }, [fetchLotteries]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 p-6 min-h-screen bg-purple-100">
-      {/* Lotteries Table Section */}
+    <div className="flex lg:flex-row flex-col gap-8 p-4 md:p-6 min-h-screen bg-purple-100">
+      {/* Lotteries Section */}
       <div className="w-full lg:w-2/3">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="p-6 border-b border-purple-200">
-            <h2 className="text-2xl font-semibold text-purple-900">
-              Active Lotteries
-            </h2>
+          {/* Section Selector */}
+          <div className="border-b border-purple-200">
+            <div className="flex overflow-x-auto whitespace-nowrap">
+              <button
+                onClick={() => setActiveSection("active")}
+                className={`flex-1 px-4 py-4 text-center border-b-2 transition-colors ${
+                  activeSection === "active"
+                    ? "border-purple-600 text-purple-600 font-medium"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Active Lotteries
+              </button>
+              <button
+                onClick={() => setActiveSection("past")}
+                className={`flex-1 px-4 py-4 text-center border-b-2 transition-colors ${
+                  activeSection === "past"
+                    ? "border-purple-600 text-purple-600 font-medium"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Past Lotteries
+              </button>
+              <button
+                onClick={() => {
+                  setActiveSection("my");
+                  setMyLotteryType("enrolled");
+                }}
+                className={`flex-1 px-4 py-4 text-center border-b-2 transition-colors ${
+                  activeSection === "my" && myLotteryType === "enrolled"
+                    ? "border-purple-600 text-purple-600 font-medium"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Enrolled Lotteries
+              </button>
+              <button
+                onClick={() => {
+                  setActiveSection("my");
+                  setMyLotteryType("created");
+                }}
+                className={`flex-1 px-4 py-4 text-center border-b-2 transition-colors ${
+                  activeSection === "my" && myLotteryType === "created"
+                    ? "border-purple-600 text-purple-600 font-medium"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Created Lotteries
+              </button>
+            </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-purple-50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-purple-900">
-                    Lottery Address
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-purple-900">
-                    Token
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-purple-900">
-                    Entry Fee
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-purple-100">
-                {loading ? (
-                  <tr>
-                    <td
-                      colSpan={3}
-                      className="px-6 py-4 text-center text-purple-700"
-                    >
-                      Loading lotteries...
-                    </td>
-                  </tr>
-                ) : lotteries.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={3}
-                      className="px-6 py-4 text-center text-purple-700"
-                    >
-                      No active lotteries found
-                    </td>
-                  </tr>
-                ) : (
-                  lotteries.map((lottery: LotteryDetails, index) => (
-                    <tr
-                      key={index}
-                      onClick={() =>
-                        router.push(`/lotteries/${lottery.address}`)
-                      }
-                      className="hover:bg-purple-50 cursor-pointer transition-colors"
-                    >
-                      <td className="px-6 py-4 text-sm text-purple-900 font-mono">
-                        {shortenAddress(lottery.address)}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-purple-900">
-                        {lottery.token.name}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-purple-900">
-                        {formatTokenAmount(
-                          lottery.participant_fees,
-                          lottery.token.decimals,
-                          lottery.token.symbol
-                        )}
-                      </td>
+
+          {/* Conditional rendering for mobile/desktop views */}
+          {loading ? (
+            <div className="p-8 text-center text-purple-700">
+              Loading lotteries...
+            </div>
+          ) : filteredLotteries.length === 0 ? (
+            <div className="p-8 text-center text-purple-700">
+              No lotteries found
+            </div>
+          ) : (
+            <>
+              {/* Mobile View - Card List */}
+              <div className="lg:hidden p-4 space-y-3">
+                {filteredLotteries.map((lottery, index) => (
+                  <LotteryCard
+                    key={index}
+                    lottery={lottery}
+                    router={router}
+                    activeSection={activeSection}
+                  />
+                ))}
+              </div>
+
+              {/* Desktop View - Table */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-purple-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-sm font-medium text-purple-900">
+                        Lottery Address
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-medium text-purple-900">
+                        Token
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-medium text-purple-900">
+                        Entry Fee
+                      </th>
+                      {activeSection === "past" && (
+                        <th className="px-6 py-4 text-left text-sm font-medium text-purple-900">
+                          Winner
+                        </th>
+                      )}
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody className="divide-y divide-purple-100">
+                    {filteredLotteries.map((lottery, index) => (
+                      <tr
+                        key={index}
+                        onClick={() =>
+                          router.push(`/lotteries/${lottery.address}`)
+                        }
+                        className="hover:bg-purple-50 cursor-pointer transition-colors"
+                      >
+                        <td className="px-6 py-4 text-sm text-purple-900 font-mono">
+                          {shortenAddress(lottery.address)}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-purple-900">
+                          {lottery.token.name}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-purple-900">
+                          {formatTokenAmount(
+                            lottery.participant_fees,
+                            lottery.token.decimals,
+                            lottery.token.symbol
+                          )}
+                        </td>
+                        {activeSection === "past" && (
+                          <td className="px-6 py-4 text-sm text-purple-900">
+                            {shortenAddress(lottery.winner)}
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </div>
       </div>
-
       {/* Create Lottery Form Section */}
       <div className="w-full lg:w-1/3">
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        <div className="bg-white rounded-xl shadow-lg p-6 sticky top-6">
           <h2 className="text-2xl font-semibold text-purple-900 mb-6">
             Create New Lottery
           </h2>

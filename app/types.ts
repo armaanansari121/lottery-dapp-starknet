@@ -33,3 +33,6 @@ export interface TokenOption {
   symbol: string;
   decimals: number;
 }
+
+export type LotterySection = "active" | "past" | "my";
+export type MyLotteryType = "enrolled" | "created";

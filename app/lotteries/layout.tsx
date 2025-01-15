@@ -8,7 +8,7 @@ export default function LotteryLayout({
   children: React.ReactNode;
 }) {
   useEffect(() => {
-    document.title = "Lotteries";
+    document.title = "Starknet Lottery | Lotteries";
     document.head
       .querySelector("link[rel='icon']")
       ?.setAttribute("href", "/starknet.svg");
