@@ -22,7 +22,7 @@ const Address: React.FC<AddressProps> = ({ isMobile = false }) => {
   return (
     <div
       className={`
-      flex items-center gap-2 rounded-lg p-2 max-w-full overflow-x-auto
+      flex items-center gap-2 rounded-lg max-w-full overflow-x-auto
       ${isMobile ? "w-full" : ""}
     `}
     >
@@ -37,8 +37,8 @@ const Address: React.FC<AddressProps> = ({ isMobile = false }) => {
           flex bg-[#E6E6FA] justify-between items-center gap-2 rounded-full
           ${
             isMobile
-              ? "w-full px-6 py-4"
-              : "px-4 sm:px-6 py-3 sm:py-4 sm:w-auto"
+              ? "w-full px-6 py-3"
+              : "px-4 sm:px-6 py-2 sm:py-2 sm:w-auto"
           }
         `}
         >

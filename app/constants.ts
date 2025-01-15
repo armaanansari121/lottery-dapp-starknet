@@ -10,6 +10,9 @@ export const STRK_TOKEN_ADDRESS =
   "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d";
 
 export const PRAGMA_VRF_FEES = BigInt("20000000000000000");
+export const CALLBACK_FEE_LIMIT = "10000000000000000";
+
+export const voyagerScanBaseUrl = "https://sepolia.voyager.online";
 
 export const provider = new RpcProvider({
   nodeUrl: "https://starknet-sepolia.public.blastapi.io",
@@ -28,5 +31,19 @@ export const KNOWN_TOKENS: TokenOption[] = [
     name: "Starknet Token",
     symbol: "STRK",
     decimals: 18,
+  },
+  {
+    address:
+      "0x053b40a647cedfca6ca84f542a0fe36736031905a9639a7f19a3c1e66bfd5080",
+    name: "USDC",
+    symbol: "USDC",
+    decimals: 6,
+  },
+  {
+    address:
+      "0x02ab8758891e84b968ff11361789070c6b1af2df618d6d2f4a78b0757573c6eb",
+    name: "USDT",
+    symbol: "USDT",
+    decimals: 6,
   },
 ];

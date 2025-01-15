@@ -14,6 +14,26 @@ export type LotteryDetails = {
   state: LotteryState;
 };
 
+export interface LotteryContextType {
+  lotteries: LotteryDetails[];
+  loading: boolean;
+  filteredLotteries: LotteryDetails[];
+  activeSection: LotterySection;
+  myLotteryType: MyLotteryType;
+  setActiveSection: (section: LotterySection) => void;
+  setMyLotteryType: (type: MyLotteryType) => void;
+  createLottery: (token: string, participantFees: string) => Promise<void>;
+  enrollInLottery: (
+    lotteryAddress: string,
+    participantFees: string,
+    token: string
+  ) => Promise<void>;
+  selectWinner: (lotteryAddress: string) => Promise<void>;
+  withdrawOracleFees: (lotteryAddress: string) => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  refreshLotteries: () => Promise<any[]>;
+}
+
 export type TokenDetails = {
   name: string;
   symbol: string;

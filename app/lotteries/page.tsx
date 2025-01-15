@@ -1,50 +1,29 @@
+// pages/index.tsx
 "use client";
-import React, { useCallback, useEffect, useState } from "react";
-import { useAccount } from "@starknet-react/core";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ETH_TOKEN_ADDRESS,
-  factory_contract,
-  KNOWN_TOKENS,
-  LOTTERY_FACTORY_ADDRESS,
-  PRAGMA_VRF_FEES,
-  provider,
-} from "../constants";
-import { cairo, CallData, Contract } from "starknet";
-import { LotteryABI } from "../abi";
-import {
-  FetchedLottery,
-  LotteryDetails,
-  LotterySection,
-  LotteryState,
-  MyLotteryType,
-  TokenDetails,
-} from "../types";
-import {
-  getRandomNumber,
-  convertToStarknetAddress,
-  shortenAddress,
-  decimalToText,
-  formatTokenAmount,
-  convertAddressToStarknetAddress,
-} from "../utils";
+import { useAccount } from "@starknet-react/core";
+import { KNOWN_TOKENS } from "../constants";
 import { LotteryCard } from "../components/LotteryCard";
+import { useLottery } from "../contexts/LotteryContext";
+import { shortenAddress, formatTokenAmount } from "../utils";
+import Loader from "../components/Loader";
 
-// Cache to store token details
-const tokenDetailsCache: Map<string, TokenDetails> = new Map();
-
-export default function Home() {
-  const { account } = useAccount();
+export function Home() {
   const router = useRouter();
-  const [lotteries, setLotteries] = useState<LotteryDetails[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState<LotterySection>("active");
-  const [myLotteryType, setMyLotteryType] = useState<MyLotteryType>("enrolled");
-  const [filteredLotteries, setFilteredLotteries] = useState<LotteryDetails[]>(
-    []
-  );
+  const { account } = useAccount();
+  const {
+    loading,
+    filteredLotteries,
+    activeSection,
+    myLotteryType,
+    setActiveSection,
+    setMyLotteryType,
+    createLottery,
+  } = useLottery();
+
   const [formData, setFormData] = useState({
-    token: ETH_TOKEN_ADDRESS,
+    token: KNOWN_TOKENS[0].address,
     participant_fees: "",
   });
   const [customToken, setCustomToken] = useState("");
@@ -52,226 +31,17 @@ export default function Home() {
     "known" | "custom"
   >("known");
 
-  const getFilteredLotteries = useCallback(() => {
-    if (activeSection === "active") {
-      setFilteredLotteries(
-        lotteries.filter((lottery) => lottery.state === LotteryState.ACTIVE)
-      );
-    } else if (activeSection === "past") {
-      setFilteredLotteries(
-        lotteries.filter(
-          (lottery) =>
-            lottery.state === LotteryState.CLOSED ||
-            lottery.state === LotteryState.WINNER_SELECTED
-        )
-      );
-    } else if (activeSection === "my") {
-      if (myLotteryType === "created") {
-        setFilteredLotteries(
-          lotteries.filter(
-            (lottery) =>
-              lottery.owner ===
-              convertAddressToStarknetAddress(account?.address || "")
-          )
-        );
-      } else {
-        setFilteredLotteries(
-          lotteries.filter((lottery) =>
-            lottery.participants.includes(
-              convertAddressToStarknetAddress(account?.address || "")
-            )
-          )
-        );
-      }
-    }
-    return [];
-  }, [account, activeSection, lotteries, myLotteryType]);
-
-  // Filter functions for different lottery sections
-  useEffect(() => {
-    getFilteredLotteries();
-  }, [account, getFilteredLotteries, activeSection]);
-
-  async function createLottery(e: React.FormEvent) {
+  const handleCreateLottery = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const selectedToken =
-        KNOWN_TOKENS.find((t) => t.address === formData.token) ||
-        (await getTokenDetails(formData.token));
-      // Convert from human readable amount to wei
-      const amount = BigInt(
-        Math.floor(
-          parseFloat(formData.participant_fees) *
-            Math.pow(10, selectedToken.decimals)
-        )
-      );
-      const multiCall = await account?.execute([
-        {
-          contractAddress: ETH_TOKEN_ADDRESS,
-          entrypoint: "approve",
-          calldata: CallData.compile({
-            spender: LOTTERY_FACTORY_ADDRESS,
-            amount: cairo.uint256(PRAGMA_VRF_FEES),
-          }),
-        },
-        {
-          contractAddress: LOTTERY_FACTORY_ADDRESS,
-          entrypoint: "create_lottery",
-          calldata: CallData.compile({
-            token: formData.token,
-            participant_fees: cairo.uint256(amount),
-            salt: getRandomNumber(),
-          }),
-        },
-      ]);
-      await provider.waitForTransaction(multiCall?.transaction_hash || "");
-      fetchLotteries(); // Refresh the list
+      await createLottery(formData.token, formData.participant_fees);
+      // Reset form after successful creation
+      setFormData({ token: KNOWN_TOKENS[0].address, participant_fees: "" });
+      setCustomToken("");
     } catch (error) {
       console.error("Error creating lottery:", error);
     }
-  }
-
-  // Function to fetch token details with caching
-  async function getTokenDetails(tokenAddress: string): Promise<TokenDetails> {
-    // Check if details are already in cache
-    const cachedDetails = tokenDetailsCache.get(tokenAddress);
-    if (cachedDetails) {
-      console.log("Using cached token details for:", tokenAddress);
-      return cachedDetails;
-    }
-
-    const { abi: ERC20Abi } = await provider.getClassAt(tokenAddress);
-    // Create token contract instance
-    const tokenContract = new Contract(
-      ERC20Abi,
-      tokenAddress,
-      provider
-    ).typedv2(ERC20Abi);
-
-    let [symbol, name, decimals] = await Promise.all([
-      tokenContract.symbol(),
-      tokenContract.name(),
-      tokenContract.decimals(),
-    ]);
-
-    name = decimalToText(name);
-    symbol = decimalToText(symbol);
-    decimals = Number(decimals);
-
-    try {
-      const tokenDetails: TokenDetails = {
-        address: tokenAddress,
-        name,
-        symbol,
-        decimals,
-      };
-
-      // Store in cache
-      tokenDetailsCache.set(tokenAddress, tokenDetails);
-      console.log("Fetched and cached token details for:", tokenAddress);
-
-      return tokenDetails;
-    } catch (error) {
-      console.error(`Error fetching token details for ${tokenAddress}:`, error);
-      // Return a default object with the address in case of error
-      return {
-        address: tokenAddress,
-        name: "Unknown Token",
-        symbol: "???",
-        decimals: 18,
-      };
-    }
-  }
-
-  const fetchLotteryDetails = useCallback(async (lotteryAddress: string) => {
-    try {
-      const lotteryContract = new Contract(
-        LotteryABI,
-        lotteryAddress,
-        provider
-      ).typedv2(LotteryABI);
-
-      const details = await lotteryContract.get_lottery_details();
-      const participants = details[1].map((participant: bigint) =>
-        convertToStarknetAddress(participant)
-      );
-
-      // Get token address in the correct format
-      const tokenAddress = convertToStarknetAddress(details[2]);
-
-      // Fetch token details
-      const tokenDetails = await getTokenDetails(tokenAddress);
-
-      let state;
-      if (details[5].variant.Active) {
-        state = LotteryState.ACTIVE;
-      } else if (details[5].variant.WinnerSelected) {
-        state = LotteryState.WINNER_SELECTED;
-      } else {
-        state = LotteryState.CLOSED;
-      }
-
-      return {
-        address: lotteryAddress,
-        owner: convertToStarknetAddress(details[0]),
-        participants,
-        token: tokenDetails,
-        participant_fees: details[3],
-        winner:
-          details[4] == BigInt(0)
-            ? "No winner yet"
-            : convertToStarknetAddress(details[4]),
-        state,
-      };
-    } catch (error) {
-      console.error(
-        `Error fetching details for lottery ${lotteryAddress}:`,
-        error
-      );
-      return null;
-    }
-  }, []);
-
-  const fetchLotteries = useCallback(async () => {
-    try {
-      // Get all lottery addresses from factory
-      const lotteryAddresses = await factory_contract.get_lotteries();
-
-      // Convert addresses and create promises for parallel fetching
-      const detailPromises = lotteryAddresses.map((lottery: FetchedLottery) => {
-        const starknetAddress = convertToStarknetAddress(
-          lottery.lottery_address
-        );
-        return fetchLotteryDetails(starknetAddress);
-      });
-
-      // Fetch all details in parallel
-      const allDetails = await Promise.allSettled(detailPromises);
-
-      // Process results
-      const successfulFetches = allDetails
-        .filter(
-          (result) => result.status === "fulfilled" && result.value !== null
-        )
-        // @ts-expect-error...
-        .map((result) => result.value);
-
-      // Update state with basic lottery info for the table
-      setLotteries(successfulFetches.reverse());
-
-      return successfulFetches;
-    } catch (error) {
-      console.error("Error fetching lotteries:", error);
-      setLotteries([]);
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchLotteryDetails]);
-
-  useEffect(() => {
-    fetchLotteries();
-  }, [fetchLotteries]);
+  };
 
   return (
     <div className="flex lg:flex-row flex-col gap-8 p-4 md:p-6 min-h-screen bg-purple-100">
@@ -330,10 +100,10 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Conditional rendering for mobile/desktop views */}
+          {/* Content */}
           {loading ? (
             <div className="p-8 text-center text-purple-700">
-              Loading lotteries...
+              <Loader isLoading={true} />
             </div>
           ) : filteredLotteries.length === 0 ? (
             <div className="p-8 text-center text-purple-700">
@@ -341,7 +111,7 @@ export default function Home() {
             </div>
           ) : (
             <>
-              {/* Mobile View - Card List */}
+              {/* Mobile View */}
               <div className="lg:hidden p-4 space-y-3">
                 {filteredLotteries.map((lottery, index) => (
                   <LotteryCard
@@ -353,7 +123,7 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* Desktop View - Table */}
+              {/* Desktop View */}
               <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-purple-50">
@@ -410,13 +180,14 @@ export default function Home() {
           )}
         </div>
       </div>
+
       {/* Create Lottery Form Section */}
       <div className="w-full lg:w-1/3">
         <div className="bg-white rounded-xl shadow-lg p-6 sticky top-6">
           <h2 className="text-2xl font-semibold text-purple-900 mb-6">
             Create New Lottery
           </h2>
-          <form onSubmit={createLottery} className="space-y-4">
+          <form onSubmit={handleCreateLottery} className="space-y-4">
             <div className="space-y-4">
               <label className="block text-sm font-medium text-purple-900">
                 ERC20 Token Type
@@ -514,3 +285,5 @@ export default function Home() {
     </div>
   );
 }
+
+export default Home;
