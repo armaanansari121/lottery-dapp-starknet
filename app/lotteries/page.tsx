@@ -10,7 +10,7 @@ import { shortenAddress, formatTokenAmount } from "../utils";
 import Loader from "../components/Loader";
 import Image from "next/image";
 
-export function Home() {
+export default function Home() {
   const router = useRouter();
   const { account } = useAccount();
   const {
@@ -309,5 +309,3 @@ export function Home() {
     </div>
   );
 }
-
-export default Home;
