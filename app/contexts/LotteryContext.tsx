@@ -15,6 +15,7 @@ import {
   LOTTERY_FACTORY_ADDRESS,
   PRAGMA_VRF_FEES,
   CALLBACK_FEE_LIMIT,
+  KNOWN_TOKENS,
 } from "../constants";
 import { LotteryABI } from "../abi";
 import {
@@ -35,9 +36,6 @@ import {
 
 const LotteryContext = createContext<LotteryContextType | undefined>(undefined);
 
-// Cache to store token details
-const tokenDetailsCache: Map<string, TokenDetails> = new Map();
-
 export function LotteryProvider({ children }: { children: React.ReactNode }) {
   const { account } = useAccount();
   const [lotteries, setLotteries] = useState<LotteryDetails[]>([]);
@@ -51,9 +49,8 @@ export function LotteryProvider({ children }: { children: React.ReactNode }) {
   const getTokenDetails = async (
     tokenAddress: string
   ): Promise<TokenDetails> => {
-    const cachedDetails = tokenDetailsCache.get(tokenAddress);
-    if (cachedDetails) {
-      return cachedDetails;
+    if (KNOWN_TOKENS.find((token) => token.address === tokenAddress)) {
+      return KNOWN_TOKENS.find((token) => token.address === tokenAddress)!;
     }
 
     const { abi: ERC20Abi } = await provider.getClassAt(tokenAddress);
@@ -79,8 +76,8 @@ export function LotteryProvider({ children }: { children: React.ReactNode }) {
         name,
         symbol,
         decimals,
+        logo: null,
       };
-      tokenDetailsCache.set(tokenAddress, tokenDetails);
       return tokenDetails;
     } catch (error) {
       console.error(`Error fetching token details for ${tokenAddress}:`, error);
@@ -89,6 +86,7 @@ export function LotteryProvider({ children }: { children: React.ReactNode }) {
         name: "Unknown Token",
         symbol: "???",
         decimals: 18,
+        logo: null,
       };
     }
   };

@@ -39,19 +39,14 @@ export type TokenDetails = {
   symbol: string;
   decimals: number;
   address: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  logo: any;
 };
 
 export enum LotteryState {
   ACTIVE = 0,
   WINNER_SELECTED = 1,
   CLOSED = 2,
-}
-
-export interface TokenOption {
-  address: string;
-  name: string;
-  symbol: string;
-  decimals: number;
 }
 
 export type LotterySection = "active" | "past" | "my";

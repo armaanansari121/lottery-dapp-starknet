@@ -1,6 +1,10 @@
 import { Contract, RpcProvider } from "starknet";
 import { FactoryABI } from "./abi";
-import { TokenOption } from "./types";
+import { TokenDetails } from "./types";
+import starknet from "../public/starknet.svg";
+import eth from "../public/eth.svg";
+import usdc from "../public/usdc.svg";
+import usdt from "../public/usdt.svg";
 
 export const LOTTERY_FACTORY_ADDRESS =
   "0x00cfd32cb1fe08669eaf6ec9c00935f5a03526a5bd38af62d26c3b574dd99412";
@@ -24,13 +28,20 @@ export const factory_contract = new Contract(
   provider
 ).typedv2(FactoryABI);
 
-export const KNOWN_TOKENS: TokenOption[] = [
-  { address: ETH_TOKEN_ADDRESS, name: "Ethereum", symbol: "ETH", decimals: 18 },
+export const KNOWN_TOKENS: TokenDetails[] = [
+  {
+    address: ETH_TOKEN_ADDRESS,
+    name: "Ether",
+    symbol: "ETH",
+    decimals: 18,
+    logo: eth,
+  },
   {
     address: STRK_TOKEN_ADDRESS,
     name: "Starknet Token",
     symbol: "STRK",
     decimals: 18,
+    logo: starknet,
   },
   {
     address:
@@ -38,6 +49,7 @@ export const KNOWN_TOKENS: TokenOption[] = [
     name: "USDC",
     symbol: "USDC",
     decimals: 6,
+    logo: usdc,
   },
   {
     address:
@@ -45,5 +57,6 @@ export const KNOWN_TOKENS: TokenOption[] = [
     name: "USDT",
     symbol: "USDT",
     decimals: 6,
+    logo: usdt,
   },
 ];

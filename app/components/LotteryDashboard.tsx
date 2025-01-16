@@ -17,6 +17,7 @@ import { LotteryDetails, LotteryState } from "../types";
 import { useLottery } from "../contexts/LotteryContext";
 import Loader from "./Loader";
 import { voyagerScanBaseUrl } from "../constants";
+import Image from "next/image";
 
 const AddressLink = ({
   address,
@@ -140,9 +141,24 @@ const LotteryDashboard = ({
                 <h3 className="text-sm font-medium text-gray-500">
                   Token Details
                 </h3>
-                <p className="mt-1 text-sm">
-                  {lotteryDetails.token.name} ({lotteryDetails.token.symbol})
-                </p>
+                {lotteryDetails.token.logo ? (
+                  <div className="flex items-center gap-2">
+                    <Image
+                      src={lotteryDetails.token.logo}
+                      alt="Token Logo"
+                      width={16}
+                      height={16}
+                    />
+                    <p className="mt-1 text-sm">
+                      {lotteryDetails.token.name} ({lotteryDetails.token.symbol}
+                      )
+                    </p>
+                  </div>
+                ) : (
+                  <p className="mt-1 text-sm">
+                    {lotteryDetails.token.name} ({lotteryDetails.token.symbol})
+                  </p>
+                )}
                 <AddressLink address={lotteryDetails.token.address} />
               </div>
               <div>
@@ -158,8 +174,19 @@ const LotteryDashboard = ({
             </div>
           </div>
 
+          {/* Owner Disclaimer */}
+          {isOwner && lotteryDetails.state === 0 && (
+            <div className="mt-4 text-sm text-red-600">
+              <p>
+                Please wait for a few minutes for the Pragma VRF Oracle to
+                submit the random number. Do not send the Select Winner
+                transaction again during this time.
+              </p>
+            </div>
+          )}
+
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             {lotteryDetails.state === 0 && (
               <button
                 disabled={isEnrolled || !account?.address}

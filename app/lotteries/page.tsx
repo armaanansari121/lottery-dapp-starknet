@@ -8,6 +8,7 @@ import { LotteryCard } from "../components/LotteryCard";
 import { useLottery } from "../contexts/LotteryContext";
 import { shortenAddress, formatTokenAmount } from "../utils";
 import Loader from "../components/Loader";
+import Image from "next/image";
 
 export function Home() {
   const router = useRouter();
@@ -137,6 +138,9 @@ export function Home() {
                       <th className="px-6 py-4 text-left text-sm font-medium text-purple-900">
                         Entry Fee
                       </th>
+                      <th className="px-6 py-4 text-left text-sm font-medium text-purple-900">
+                        Current Pot
+                      </th>
                       {activeSection === "past" && (
                         <th className="px-6 py-4 text-left text-sm font-medium text-purple-900">
                           Winner
@@ -157,11 +161,31 @@ export function Home() {
                           {shortenAddress(lottery.address)}
                         </td>
                         <td className="px-6 py-4 text-sm text-purple-900">
-                          {lottery.token.name}
+                          {lottery.token.logo ? (
+                            <div className="flex items-center gap-2">
+                              <Image
+                                src={lottery.token.logo}
+                                alt="Token Logo"
+                                width={16}
+                                height={16}
+                              />
+                              {lottery.token.name}
+                            </div>
+                          ) : (
+                            lottery.token.name
+                          )}
                         </td>
                         <td className="px-6 py-4 text-sm text-purple-900">
                           {formatTokenAmount(
                             lottery.participant_fees,
+                            lottery.token.decimals,
+                            lottery.token.symbol
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-purple-900">
+                          {formatTokenAmount(
+                            lottery.participant_fees *
+                              BigInt(lottery.participants.length),
                             lottery.token.decimals,
                             lottery.token.symbol
                           )}
