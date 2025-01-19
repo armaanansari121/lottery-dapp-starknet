@@ -43,7 +43,12 @@ const LotteryDashboard = ({
 }) => {
   const [showParticipants, setShowParticipants] = useState(false);
   const { account, isConnected } = useAccount();
-  const { enrollInLottery, selectWinner, withdrawOracleFees } = useLottery();
+  const {
+    enrollInLottery,
+    selectWinner,
+    withdrawOracleFees,
+    unenrollFromLottery,
+  } = useLottery();
 
   const isOwner =
     convertAddressToStarknetAddress(account?.address || "") ===
@@ -51,6 +56,18 @@ const LotteryDashboard = ({
   const isEnrolled = lotteryDetails?.participants.includes(
     convertAddressToStarknetAddress(account?.address || "")
   );
+
+  const handleClick = (lotteryDetails: LotteryDetails) => {
+    if (isEnrolled) {
+      unenrollFromLottery(lotteryDetails?.address);
+    } else {
+      enrollInLottery(
+        lotteryDetails?.address,
+        lotteryDetails.participant_fees.toString(),
+        lotteryDetails.token.address
+      );
+    }
+  };
 
   const getStatusConfig = (state: LotteryState | undefined) => {
     switch (state) {
@@ -171,6 +188,14 @@ const LotteryDashboard = ({
                   )}
                 </p>
               </div>
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">
+                  Minimum Number of Participants
+                </h3>
+                <p className="mt-1 text-sm">
+                  {lotteryDetails.minimum_participants}
+                </p>
+              </div>
             </div>
           </div>
 
@@ -189,28 +214,26 @@ const LotteryDashboard = ({
           <div className="flex flex-col sm:flex-row gap-4">
             {lotteryDetails.state === 0 && (
               <button
-                disabled={isEnrolled || !isConnected}
+                disabled={!isConnected}
                 className="flex-1 py-3 px-4 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                onClick={() => {
-                  enrollInLottery(
-                    lotteryDetails.address,
-                    lotteryDetails.participant_fees.toString(),
-                    lotteryDetails.token.address
-                  );
-                }}
+                onClick={() => handleClick(lotteryDetails)}
               >
                 {!isConnected
                   ? "Connect Wallet to Enroll"
                   : isEnrolled
-                  ? "Already Enrolled"
+                  ? "Withdraw from Lottery"
                   : "Enroll in Lottery"}
               </button>
             )}
 
             {isOwner && lotteryDetails.state === 0 && (
               <button
-                className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 onClick={() => selectWinner(lotteryDetails.address)}
+                disabled={
+                  BigInt(lotteryDetails.participants.length) <
+                  lotteryDetails.minimum_participants
+                }
               >
                 Select Winner
               </button>

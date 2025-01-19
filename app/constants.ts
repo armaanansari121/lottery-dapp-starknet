@@ -7,7 +7,7 @@ import usdc from "../public/usdc.svg";
 import usdt from "../public/usdt.svg";
 
 export const LOTTERY_FACTORY_ADDRESS =
-  "0x00cfd32cb1fe08669eaf6ec9c00935f5a03526a5bd38af62d26c3b574dd99412";
+  "0x04705c729ba855f89f78bda5818ca6ba42e84728b95701474eef31b04e17d674";
 export const ETH_TOKEN_ADDRESS =
   "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";
 export const STRK_TOKEN_ADDRESS =

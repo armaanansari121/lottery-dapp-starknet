@@ -26,6 +26,7 @@ export default function Home() {
   const [formData, setFormData] = useState({
     token: KNOWN_TOKENS[0].address,
     participant_fees: "",
+    minimum_participants: "",
   });
   const [customToken, setCustomToken] = useState("");
   const [selectedTokenType, setSelectedTokenType] = useState<
@@ -35,9 +36,18 @@ export default function Home() {
   const handleCreateLottery = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createLottery(formData.token, formData.participant_fees);
+      // console.log("Creating lottery with data:", formData);
+      await createLottery(
+        formData.token,
+        formData.participant_fees,
+        formData.minimum_participants
+      );
       // Reset form after successful creation
-      setFormData({ token: KNOWN_TOKENS[0].address, participant_fees: "" });
+      setFormData({
+        token: KNOWN_TOKENS[0].address,
+        participant_fees: "",
+        minimum_participants: "",
+      });
       setCustomToken("");
     } catch (error) {
       console.error("Error creating lottery:", error);
@@ -291,6 +301,24 @@ export default function Home() {
                 }
                 className="w-full p-3 rounded-lg border border-purple-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="Enter amount (e.g., 0.5)"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-purple-900 mb-2">
+                Minimum Participants
+              </label>
+              <input
+                type="text"
+                value={formData.minimum_participants}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    minimum_participants: e.target.value,
+                  })
+                }
+                className="w-full p-3 rounded-lg border border-purple-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                placeholder="Enter the minimum number of participants"
               />
             </div>
 

@@ -8,6 +8,24 @@ export const FactoryABI: Abi = [
   },
   {
     type: "struct",
+    name: "core::byte_array::ByteArray",
+    members: [
+      {
+        name: "data",
+        type: "core::array::Array::<core::bytes_31::bytes31>",
+      },
+      {
+        name: "pending_word",
+        type: "core::felt252",
+      },
+      {
+        name: "pending_word_len",
+        type: "core::integer::u32",
+      },
+    ],
+  },
+  {
+    type: "struct",
     name: "core::integer::u256",
     members: [
       {
@@ -39,9 +57,65 @@ export const FactoryABI: Abi = [
     ],
   },
   {
+    type: "enum",
+    name: "core::bool",
+    variants: [
+      {
+        name: "False",
+        type: "()",
+      },
+      {
+        name: "True",
+        type: "()",
+      },
+    ],
+  },
+  {
+    type: "struct",
+    name: "lottery::factory::Profile",
+    members: [
+      {
+        name: "is_registered",
+        type: "core::bool",
+      },
+      {
+        name: "username",
+        type: "core::byte_array::ByteArray",
+      },
+      {
+        name: "profile_picture",
+        type: "core::byte_array::ByteArray",
+      },
+      {
+        name: "bio",
+        type: "core::byte_array::ByteArray",
+      },
+    ],
+  },
+  {
     type: "interface",
     name: "lottery::factory::ILotteryFactory",
     items: [
+      {
+        type: "function",
+        name: "register_user",
+        inputs: [
+          {
+            name: "username",
+            type: "core::byte_array::ByteArray",
+          },
+          {
+            name: "profile_picture",
+            type: "core::byte_array::ByteArray",
+          },
+          {
+            name: "bio",
+            type: "core::byte_array::ByteArray",
+          },
+        ],
+        outputs: [],
+        state_mutability: "external",
+      },
       {
         type: "function",
         name: "create_lottery",
@@ -49,6 +123,10 @@ export const FactoryABI: Abi = [
           {
             name: "token",
             type: "core::starknet::contract_address::ContractAddress",
+          },
+          {
+            name: "minimum_participants",
+            type: "core::integer::u256",
           },
           {
             name: "participant_fees",
@@ -65,17 +143,6 @@ export const FactoryABI: Abi = [
           },
         ],
         state_mutability: "external",
-      },
-      {
-        type: "function",
-        name: "get_lotteries",
-        inputs: [],
-        outputs: [
-          {
-            type: "core::array::Array::<lottery::factory::LotteryDetails>",
-          },
-        ],
-        state_mutability: "view",
       },
       {
         type: "function",
@@ -100,6 +167,65 @@ export const FactoryABI: Abi = [
         ],
         outputs: [],
         state_mutability: "external",
+      },
+      {
+        type: "function",
+        name: "withdraw",
+        inputs: [
+          {
+            name: "token",
+            type: "core::starknet::contract_address::ContractAddress",
+          },
+          {
+            name: "amount",
+            type: "core::integer::u256",
+          },
+        ],
+        outputs: [],
+        state_mutability: "external",
+      },
+      {
+        type: "function",
+        name: "get_lotteries",
+        inputs: [],
+        outputs: [
+          {
+            type: "core::array::Array::<lottery::factory::LotteryDetails>",
+          },
+        ],
+        state_mutability: "view",
+      },
+      {
+        type: "function",
+        name: "is_registered",
+        inputs: [
+          {
+            name: "user_address",
+            type: "core::starknet::contract_address::ContractAddress",
+          },
+        ],
+        outputs: [
+          {
+            type: "core::bool",
+          },
+        ],
+        state_mutability: "view",
+      },
+      {
+        type: "function",
+        name: "get_user_profile",
+        inputs: [
+          {
+            name: "user_address",
+            type: "core::starknet::contract_address::ContractAddress",
+          },
+        ],
+        outputs: [
+          {
+            type: "lottery::factory::Profile",
+          },
+        ],
+        state_mutability: "view",
       },
     ],
   },
@@ -293,12 +419,33 @@ export const LotteryABI: Abi = [
     ],
   },
   {
+    type: "enum",
+    name: "core::bool",
+    variants: [
+      {
+        name: "False",
+        type: "()",
+      },
+      {
+        name: "True",
+        type: "()",
+      },
+    ],
+  },
+  {
     type: "interface",
     name: "lottery::lottery::ILottery",
     items: [
       {
         type: "function",
         name: "enroll",
+        inputs: [],
+        outputs: [],
+        state_mutability: "external",
+      },
+      {
+        type: "function",
+        name: "unenroll",
         inputs: [],
         outputs: [],
         state_mutability: "external",
@@ -316,7 +463,39 @@ export const LotteryABI: Abi = [
         inputs: [],
         outputs: [
           {
-            type: "(core::starknet::contract_address::ContractAddress, core::array::Array::<core::starknet::contract_address::ContractAddress>, core::starknet::contract_address::ContractAddress, core::integer::u256, core::starknet::contract_address::ContractAddress, lottery::lottery::State)",
+            type: "(core::starknet::contract_address::ContractAddress, core::array::Array::<core::starknet::contract_address::ContractAddress>, core::starknet::contract_address::ContractAddress, core::integer::u256, core::starknet::contract_address::ContractAddress, lottery::lottery::State, core::integer::u256)",
+          },
+        ],
+        state_mutability: "view",
+      },
+      {
+        type: "function",
+        name: "get_participant_id",
+        inputs: [
+          {
+            name: "participant_address",
+            type: "core::starknet::contract_address::ContractAddress",
+          },
+        ],
+        outputs: [
+          {
+            type: "core::integer::u64",
+          },
+        ],
+        state_mutability: "view",
+      },
+      {
+        type: "function",
+        name: "is_enrolled",
+        inputs: [
+          {
+            name: "participant_address",
+            type: "core::starknet::contract_address::ContractAddress",
+          },
+        ],
+        outputs: [
+          {
+            type: "core::bool",
           },
         ],
         state_mutability: "view",
@@ -455,6 +634,10 @@ export const LotteryABI: Abi = [
       {
         name: "owner",
         type: "core::starknet::contract_address::ContractAddress",
+      },
+      {
+        name: "minimum_participants",
+        type: "core::integer::u256",
       },
       {
         name: "participant_fees",
