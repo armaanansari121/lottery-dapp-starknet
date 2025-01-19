@@ -7,11 +7,11 @@ import Address from "./address";
 
 const WalletBar: React.FC<{ isMobile?: boolean }> = ({ isMobile = false }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { address } = useAccount();
+  const { isConnected } = useAccount();
 
   return (
     <div className={`flex items-center ${isMobile ? "w-full" : ""}`}>
-      {!address ? (
+      {!isConnected ? (
         <>
           <button
             onClick={() => setIsModalOpen(true)}

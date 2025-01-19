@@ -173,6 +173,7 @@ export function LotteryProvider({ children }: { children: React.ReactNode }) {
           parseFloat(participantFees) * Math.pow(10, selectedToken.decimals)
         )
       );
+      console.log("amount", amount);
 
       const multiCall = await account?.execute([
         {
@@ -208,12 +209,7 @@ export function LotteryProvider({ children }: { children: React.ReactNode }) {
     token: string
   ) => {
     try {
-      const selectedToken = await getTokenDetails(token);
-      const amount = BigInt(
-        Math.floor(
-          parseFloat(participantFees) * Math.pow(10, selectedToken.decimals)
-        )
-      );
+      const amount = BigInt(participantFees);
 
       const multiCall = await account?.execute([
         {

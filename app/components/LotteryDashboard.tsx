@@ -42,7 +42,7 @@ const LotteryDashboard = ({
   lotteryDetails: LotteryDetails | undefined;
 }) => {
   const [showParticipants, setShowParticipants] = useState(false);
-  const { account } = useAccount();
+  const { account, isConnected } = useAccount();
   const { enrollInLottery, selectWinner, withdrawOracleFees } = useLottery();
 
   const isOwner =
@@ -189,7 +189,7 @@ const LotteryDashboard = ({
           <div className="flex flex-col sm:flex-row gap-4">
             {lotteryDetails.state === 0 && (
               <button
-                disabled={isEnrolled || !account?.address}
+                disabled={isEnrolled || !isConnected}
                 className="flex-1 py-3 px-4 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 onClick={() => {
                   enrollInLottery(
@@ -199,7 +199,7 @@ const LotteryDashboard = ({
                   );
                 }}
               >
-                {!account?.address
+                {!isConnected
                   ? "Connect Wallet to Enroll"
                   : isEnrolled
                   ? "Already Enrolled"

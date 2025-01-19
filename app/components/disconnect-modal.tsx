@@ -15,13 +15,9 @@ export default function DisconnectModal({
   setIsOpen,
 }: DisconnectWalletModalProps) {
   const { disconnect } = useDisconnect();
-  const handleClose = () => {
-    setIsOpen(false);
-  };
 
-  const handleDisconnect = () => {
-    disconnect();
-  };
+  const handleClose = () => setIsOpen(false);
+  const handleDisconnect = () => disconnect();
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -49,41 +45,38 @@ export default function DisconnectModal({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full text-center max-w-md md:max-w-[800px] transform rounded-3xl bg-white border border-[#E6E6FA] p-8 shadow-xl transition-all">
-                <div className="flex relative justify-center mt-5 text-center items-center mb-3 lg:mb-5">
+              <Dialog.Panel className="w-full max-w-sm transform rounded-3xl bg-white border border-[#E6E6FA] p-4 shadow-xl transition-all">
+                <div className="flex relative justify-center mt-2 text-center items-center mb-4">
                   <Dialog.Title
                     as="h3"
-                    className="text-[18px] lg:text-2xl font-medium text-[#483D8B]"
+                    className="text-xl font-medium text-[#483D8B]"
                   >
                     Disconnect wallet
                   </Dialog.Title>
                   <button
                     onClick={handleClose}
-                    className="text-[#9370DB] hover:text-[#483D8B] absolute right-5 transition-colors"
+                    className="text-[#9370DB] hover:text-[#483D8B] absolute right-2 transition-colors"
                   >
-                    <X className="w-6 h-6" />
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
 
-                <div className="py-[30px] px-[16px] lg:py-[81px] lg:px-[55px] my-4 lg:my-6">
-                  <p className="text-[#483D8B] text-sm lg:text-base">
-                    You are disconnecting your wallet. Are you sure you want to
-                    continue with this process?
-                  </p>
-                </div>
+                <p className="text-[#483D8B] text-sm my-4 text-center">
+                  Are you sure you want to disconnect your wallet?
+                </p>
 
-                <div className="items-center grid grid-cols-[1fr_1fr] gap-x-4">
+                <div className="grid grid-cols-2 gap-4 mt-6 mb-2">
                   <button
-                    className={`py-3 text-sm lg:text-base lg:py-4 rounded-full hover:bg-[#9370DB] bg-[#E6E6FA] text-[#483D8B] transition-colors`}
+                    className="py-3 rounded-full bg-[#E6E6FA] hover:bg-[#9370DB] text-[#483D8B] hover:text-white text-sm transition-colors"
                     onClick={handleClose}
                   >
                     Cancel
                   </button>
                   <button
-                    className="py-3 text-sm lg:text-base lg:py-4 rounded-full bg-[#9370DB] hover:bg-[#483D8B] text-white transition-colors"
+                    className="py-3 rounded-full bg-[#9370DB] hover:bg-[#483D8B] text-white text-sm transition-colors"
                     onClick={handleDisconnect}
                   >
-                    Yes, Disconnect
+                    Disconnect
                   </button>
                 </div>
               </Dialog.Panel>
