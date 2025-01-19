@@ -6,7 +6,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { Contract, cairo, CallData } from "starknet";
+import { Contract, cairo, CallData, byteArray } from "starknet";
 import { useAccount } from "@starknet-react/core";
 import {
   ETH_TOKEN_ADDRESS,
@@ -26,6 +26,7 @@ import {
   LotteryState,
   FetchedLottery,
   LotteryContextType,
+  Profile,
 } from "../types";
 import {
   getRandomNumber,
@@ -37,7 +38,8 @@ import {
 const LotteryContext = createContext<LotteryContextType | undefined>(undefined);
 
 export function LotteryProvider({ children }: { children: React.ReactNode }) {
-  const { account } = useAccount();
+  const { account, isConnected } = useAccount();
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [lotteries, setLotteries] = useState<LotteryDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<LotterySection>("active");
@@ -99,6 +101,7 @@ export function LotteryProvider({ children }: { children: React.ReactNode }) {
         provider
       ).typedv2(LotteryABI);
       const details = await lotteryContract.get_lottery_details();
+      console.log(details);
 
       const participants = details[1].map((participant: bigint) =>
         convertToStarknetAddress(participant)
@@ -120,6 +123,7 @@ export function LotteryProvider({ children }: { children: React.ReactNode }) {
         owner: convertToStarknetAddress(details[0]),
         participants,
         token: tokenDetails,
+        minimum_participants: details[6],
         participant_fees: details[3],
         winner:
           details[4] == BigInt(0)
@@ -165,7 +169,53 @@ export function LotteryProvider({ children }: { children: React.ReactNode }) {
     }
   }, [fetchLotteryDetails]);
 
-  const createLottery = async (token: string, participantFees: string) => {
+  const fetchProfile = useCallback(async () => {
+    if (isConnected && account?.address) {
+      try {
+        const res = await factory_contract.get_user_profile(account?.address);
+        const profile = {
+          username: res.username,
+          profilePicture: res.profile_picture,
+          bio: res.bio,
+          isRegistered: res.is_registered,
+        };
+        setProfile(profile);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        setProfile(null);
+      }
+    }
+  }, [account?.address, isConnected]);
+
+  const createProfile = async (
+    username: string,
+    profilePicture: string,
+    bio: string
+  ) => {
+    try {
+      const tx = await account?.execute([
+        {
+          contractAddress: LOTTERY_FACTORY_ADDRESS,
+          entrypoint: "register_user",
+          calldata: CallData.compile({
+            username: byteArray.byteArrayFromString(username),
+            profilePicture: byteArray.byteArrayFromString(profilePicture),
+            bio: byteArray.byteArrayFromString(bio),
+          }),
+        },
+      ]);
+      await provider.waitForTransaction(tx?.transaction_hash || "");
+      await fetchProfile();
+    } catch (error) {
+      console.error("Error creating profile:", error);
+    }
+  };
+
+  const createLottery = async (
+    token: string,
+    participantFees: string,
+    minimumParticipants: string
+  ) => {
     try {
       const selectedToken = await getTokenDetails(token);
       const amount = BigInt(
@@ -189,6 +239,7 @@ export function LotteryProvider({ children }: { children: React.ReactNode }) {
           entrypoint: "create_lottery",
           calldata: CallData.compile({
             token,
+            minimum_participants: cairo.uint256(minimumParticipants),
             participant_fees: cairo.uint256(amount),
             salt: getRandomNumber(),
           }),
@@ -231,6 +282,23 @@ export function LotteryProvider({ children }: { children: React.ReactNode }) {
       await fetchLotteries();
     } catch (error) {
       console.error("Error enrolling in lottery:", error);
+      throw error;
+    }
+  };
+
+  const unenrollFromLottery = async (lotteryAddress: string) => {
+    try {
+      const multiCall = await account?.execute([
+        {
+          contractAddress: lotteryAddress,
+          entrypoint: "unenroll",
+          calldata: CallData.compile({}),
+        },
+      ]);
+      await provider.waitForTransaction(multiCall?.transaction_hash || "");
+      await fetchLotteries();
+    } catch (error) {
+      console.error("Error unenrolling from lottery:", error);
       throw error;
     }
   };
@@ -315,14 +383,22 @@ export function LotteryProvider({ children }: { children: React.ReactNode }) {
     fetchLotteries();
   }, [fetchLotteries]);
 
+  useEffect(() => {
+    fetchProfile();
+  }, [account, fetchProfile, isConnected]);
+
   const value: LotteryContextType = {
+    profile,
     lotteries,
     loading,
     filteredLotteries,
     activeSection,
     myLotteryType,
+    unenrollFromLottery,
+    fetchProfile,
     setActiveSection,
     setMyLotteryType,
+    createProfile,
     createLottery,
     enrollInLottery,
     selectWinner,

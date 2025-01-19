@@ -5,6 +5,7 @@ import { Fragment, useState } from "react";
 import { useConnect, Connector } from "@starknet-react/core";
 import { X } from "lucide-react";
 import Image from "next/image";
+import { useLottery } from "../contexts/LotteryContext";
 
 interface WalletModalProps {
   isOpen: boolean;
@@ -27,7 +28,8 @@ const walletIcons = {
 } as const;
 
 export function WalletModal({ isOpen, setIsOpen }: WalletModalProps) {
-  const { connect, connectors } = useConnect();
+  const { fetchProfile } = useLottery();
+  const { connectors, connectAsync } = useConnect();
   const [selectedConnector, setSelectedConnector] = useState<Connector | null>(
     null
   );
@@ -75,9 +77,10 @@ export function WalletModal({ isOpen, setIsOpen }: WalletModalProps) {
     }
   };
 
-  const connectWallet = (connector: Connector | null) => {
+  const connectWallet = async (connector: Connector | null) => {
     if (connector) {
-      connect({ connector });
+      await connectAsync({ connector });
+      await fetchProfile();
       setSelectedConnector(connector);
       setIsOpen(false);
     }

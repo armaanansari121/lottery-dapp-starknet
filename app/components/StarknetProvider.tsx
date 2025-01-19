@@ -23,7 +23,7 @@ const StarknetProvider = ({ children }: { children: ReactNode }) => {
   const ArgentMobile = ArgentMobileConnector.init({
     options: {
       dappName: "Lottery Starknet",
-      url: "http://172.20.10.4:3000",
+      url: "https://lottery-dapp-starknet.vercel.app/",
     },
     inAppBrowserOptions: {},
   });
