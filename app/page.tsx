@@ -1,7 +1,15 @@
 "use client";
 import React from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ChevronDown, Ticket, Shield, Zap } from "lucide-react";
+import {
+  ChevronDown,
+  Ticket,
+  Shield,
+  Zap,
+  Users,
+  Award,
+  Scale,
+} from "lucide-react";
 import StarknetLogo from "../public/starknet.svg";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,7 +37,7 @@ export default function Home() {
         >
           <div className="space-y-6 mb-2">
             <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold tracking-tight">
-              Starknet Lottery
+              Lucky StarK
             </h1>
             <p className="text-lg sm:text-xl md:text-2xl text-purple-700 max-w-2xl mx-auto">
               Experience the future of decentralized lotteries powered by
@@ -102,6 +110,63 @@ export default function Home() {
                   transition={{ delay: index * 0.2 }}
                   viewport={{ once: true }}
                   className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-shadow"
+                >
+                  <div className="space-y-4">
+                    <div className="bg-purple-100 w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center">
+                      {feature.icon}
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-semibold">
+                      {feature.title}
+                    </h3>
+                    <p className="text-purple-700 text-sm sm:text-base">
+                      {feature.description}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Future Plans Section */}
+          <div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-8 sm:mb-16">
+              Coming Soon
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-12">
+              {[
+                {
+                  icon: (
+                    <Users className="w-10 h-10 sm:w-12 sm:h-12 text-purple-600" />
+                  ),
+                  title: "1-on-1 Betting",
+                  description:
+                    "Challenge friends or other players to direct bets. Set your terms and compete in a secure, transparent environment.",
+                },
+                {
+                  icon: (
+                    <Scale className="w-10 h-10 sm:w-12 sm:h-12 text-purple-600" />
+                  ),
+                  title: "Optimistic Oracle",
+                  description:
+                    "Powered by Pragma's Optimistic Oracle, ensuring fair and accurate resolution of all betting outcomes.",
+                },
+                {
+                  icon: (
+                    <Award className="w-10 h-10 sm:w-12 sm:h-12 text-purple-600" />
+                  ),
+                  title: "Enhanced Rewards",
+                  description:
+                    "New reward mechanisms and token utilities coming soon to make your winnings even more valuable.",
+                },
+              ].map((feature, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.2 }}
+                  viewport={{ once: true }}
+                  className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-shadow border-2 border-purple-300"
                 >
                   <div className="space-y-4">
                     <div className="bg-purple-100 w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center">

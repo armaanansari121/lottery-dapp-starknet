@@ -27,7 +27,7 @@ export function Navbar() {
               />
             </div>
             <span className="ml-2 text-xl sm:text-2xl md:text-3xl font-semibold text-gray-800">
-              Starknet Lottery
+              Lucky StarK
             </span>
           </div>
 
@@ -135,7 +135,7 @@ export function Navbar() {
                   />
                 </div>
                 <span className="ml-3 text-2xl font-bold text-gray-800">
-                  Starknet Lottery
+                  Lucky Stark
                 </span>
               </div>
               <button
