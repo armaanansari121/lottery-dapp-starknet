@@ -35,16 +35,28 @@ const Address: React.FC<AddressProps> = ({ isMobile = false }) => {
         }`}
       >
         {!profile?.isRegistered ? (
-          <button
-            onClick={() => setIsRegisterModalOpen(true)}
-            className={`
+          <>
+            <button
+              onClick={() => setIsRegisterModalOpen(true)}
+              className={`
               py-2 px-4 bg-[#9370DB] rounded-full text-sm leading-5 
               hover:bg-[#483D8B] text-white font-semibold transition-colors
               ${isMobile ? "w-full py-3 text-base" : "sm:py-3 sm:w-[200px]"}
             `}
-          >
-            Register Profile
-          </button>
+            >
+              Register Profile
+            </button>
+            <button
+              onClick={() => setIsDisconnectModalOpen(true)}
+              className={`
+            py-2 px-4 bg-[#9370DB] rounded-full text-sm leading-5 
+            hover:bg-[#483D8B] text-white font-semibold transition-colors
+            ${isMobile ? "w-full py-3 text-base" : "sm:py-3 sm:w-[200px]"}
+            `}
+            >
+              Disconnect Wallet
+            </button>
+          </>
         ) : (
           <div
             className={`
